@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: three-tier-config
+  namespace: three-tier-app
+data:
+  # Database Configuration
+  DATABASE_HOST: "postgres-svc"
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: "appdb"
+  DATABASE_SSLMODE: "disable"
+
+  # Backend Configuration
+  BACKEND_HOST: "0.0.0.0"
+  BACKEND_PORT: "3000"
+  BACKEND_CORS_ORIGIN: "http://frontend-svc:80"
+
+  # Frontend Configuration
+  REACT_APP_API_URL: "http://backend-svc:3000"

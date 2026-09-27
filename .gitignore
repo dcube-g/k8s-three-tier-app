@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+bower_components/
+vendor/
+
+# Environment and credentials
+.env
+.env.local
+.env.*.local
+*.local
+.credentials
+*.key
+*.pem
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+.cache/
+
+# Kubernetes
+*.kubeconfig
+kubeconfig
+
+# Temporary files
+*.tmp
+*.temp

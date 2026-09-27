@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  labels:
+    app: three-tier-app
+data:
+  # Application Settings
+  environment: "production"
+  log_level: "info"
+
+  # Database Configuration
+  database.name: "appdb"
+  database.host: "postgres-0.postgres-headless"
+  database.port: "5432"
+
+  # Frontend Configuration
+  frontend.react_app_title: "Three-Tier Application"
+
+  # Backend Configuration
+  backend.node_env: "production"
+  backend.api_prefix: "/api/v1"
+  backend.cors_origin: "http://localhost:3000"

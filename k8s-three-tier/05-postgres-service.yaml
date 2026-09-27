@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-svc
+  namespace: three-tier-app
+spec:
+  type: ClusterIP  # Headless service for StatefulSet
+  clusterIP: None
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+  selector:
+    app: postgres
+    tier: database
