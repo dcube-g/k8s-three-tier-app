@@ -1,0 +1,32 @@
+name: K8s Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint YAML files
+        run: |
+          for file in k8s-three-tier/**/*.yml k8s-three-tier/**/*.yaml; do
+            if [ -f "$file" ]; then
+              echo "Linting $file"
+              yamllint "$file" || exit 1
+            fi
+          done
+
+      - name: Dry-run validation
+        run: |
+          echo "=== K8s Dry-Run Validation ==="
+          for file in k8s-three-tier/**/*.yml k8s-three-tier/**/*.yaml; do
+            if [ -f "$file" ]; then
+              echo "Validating: $file"
+              kubectl apply -f "$file" --dry-run=client -o yaml || exit 1
+            fi
+          done
+          echo "=== Validation Complete ==="
