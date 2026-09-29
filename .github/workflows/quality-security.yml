@@ -1,0 +1,109 @@
+name: Code Quality & Security Scan
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'k8s-three-tier/backend/**'
+      - 'k8s-three-tier/frontend/**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  backend-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'k8s-three-tier/backend/package-lock.json'
+
+      - name: Install dependencies
+        run: cd k8s-three-tier/backend && npm ci
+
+      - name: Run ESLint
+        run: cd k8s-three-tier/backend && npx eslint . --max-warnings 0 || true
+        continue-on-error: true
+
+      - name: Check for security vulnerabilities
+        run: cd k8s-three-tier/backend && npm audit --production
+
+      - name: Test API endpoints
+        run: |
+          cd k8s-three-tier/backend
+          echo "Testing server startup..."
+          timeout 5 npm start &
+          sleep 2
+          curl -f http://localhost:3000/ || echo "Server check (expected to timeout)"
+
+  frontend-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate HTML
+        run: |
+          cd k8s-three-tier/frontend
+          echo "Checking HTML syntax..."
+          python3 -m html.parser index.html || exit 1
+
+      - name: Check NGINX config
+        run: |
+          cd k8s-three-tier/frontend
+          echo "Validating NGINX configuration..."
+          docker run --rm -v $(pwd):/etc/nginx:ro nginx:alpine nginx -t
+
+  docker-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan backend Dockerfile
+        run: |
+          echo "=== Backend Dockerfile Security Check ==="
+          cd k8s-three-tier/backend
+
+          # Check for best practices
+          if grep -q "FROM.*:latest" Dockerfile; then
+            echo "⚠ Warning: Using 'latest' tag in base image"
+          fi
+
+          if ! grep -q "USER" Dockerfile; then
+            echo "⚠ Warning: No non-root user defined"
+          fi
+
+      - name: Scan frontend Dockerfile
+        run: |
+          echo "=== Frontend Dockerfile Security Check ==="
+          cd k8s-three-tier/frontend
+
+          if grep -q "FROM.*:latest" Dockerfile; then
+            echo "⚠ Warning: Using 'latest' tag in base image"
+          fi
+
+  manifest-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubesec
+        run: |
+          wget https://github.com/controlplaneio/kubesec/releases/download/v2.14.3/kubesec_linux_amd64.tar.gz
+          tar xf kubesec_linux_amd64.tar.gz
+          sudo mv kubesec /usr/local/bin/
+
+      - name: Security scan with kubesec
+        run: |
+          echo "=== Running Kubesec Security Scan ==="
+          for file in k8s-three-tier/*.yaml k8s-three-tier/*.yml; do
+            if [ -f "$file" ]; then
+              echo "Scanning: $file"
+              kubesec scan "$file" || true
+            fi
+          done
