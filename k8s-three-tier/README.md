@@ -293,6 +293,10 @@ kubectl run test-$RANDOM --rm -i --tty --image=busybox -- sh
 - TLS termination with Ingress controller
 - Database backup and disaster recovery
 
+## About This Project
+
+I used Claude as an AI development assistant, including Auto Mode for scaffolding and troubleshooting. I was responsible for the architecture, requirements, validation, debugging, and final implementation. I deployed the application on Minikube and independently verified the frontend, backend, services, probes, and PostgreSQL connectivity. I can walk through every Kubernetes resource and explain why it is configured that way.
+
 ---
 
 **Stack**: Kubernetes | Docker | Node.js | React | PostgreSQL | NGINX
