@@ -1,0 +1,60 @@
+name: Docker Build & Push
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'k8s-three-tier/backend/**'
+      - 'k8s-three-tier/frontend/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'k8s-three-tier/backend/**'
+      - 'k8s-three-tier/frontend/**'
+
+jobs:
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./k8s-three-tier/backend
+          push: false
+          tags: backend-api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test backend build
+        run: |
+          docker build -t backend-api:test ./k8s-three-tier/backend
+          echo "✓ Backend image built successfully"
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./k8s-three-tier/frontend
+          push: false
+          tags: frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test frontend build
+        run: |
+          docker build -t frontend:test ./k8s-three-tier/frontend
+          echo "✓ Frontend image built successfully"
