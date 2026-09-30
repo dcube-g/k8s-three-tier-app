@@ -43,6 +43,7 @@ jobs:
           find k8s-three-tier \
             -type f \( -name "*.yaml" -o -name "*.yml" \) \
             ! -path "*/grafana/provisioning/*" \
+            ! -path "*/monitoring/prometheus/prometheus.yml" \
             -print0 |
           while IFS= read -r -d '' file; do
             echo "Validating: $file"
