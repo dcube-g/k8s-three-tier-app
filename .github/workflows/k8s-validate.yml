@@ -17,8 +17,10 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Install kubectl
         run: |
@@ -26,67 +28,83 @@ jobs:
           chmod +x kubectl
           sudo mv kubectl /usr/local/bin/
 
-      - name: Install kubeval
+      - name: Install kubeconform
         run: |
-          wget https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
-          tar xf kubeval-linux-amd64.tar.gz
-          sudo mv kubeval /usr/local/bin/
+          curl -L -o kubeconform.tar.gz \
+            https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz
+          tar -xzf kubeconform.tar.gz
+          sudo mv kubeconform /usr/local/bin/
+          kubeconform -v
 
       - name: Validate Kubernetes manifests
         run: |
           echo "=== Validating K8s Manifests ==="
-          for file in k8s-three-tier/*.yaml k8s-three-tier/*.yml; do
-            if [ -f "$file" ]; then
-              echo "Validating: $file"
-              kubeval "$file" || exit 1
-              kubectl apply -f "$file" --dry-run=client -o yaml > /dev/null || exit 1
-            fi
+
+          find k8s-three-tier \
+            -type f \( -name "*.yaml" -o -name "*.yml" \) \
+            -print0 |
+          while IFS= read -r -d '' file; do
+            echo "Validating: $file"
+            kubeconform \
+              -strict \
+              -summary \
+              "$file"
           done
+
           echo "✓ All manifests valid"
 
       - name: Check resource naming conventions
         run: |
           echo "=== Checking Naming Conventions ==="
-          for file in k8s-three-tier/*.yaml k8s-three-tier/*.yml; do
-            if [ -f "$file" ]; then
-              # Check for lowercase names and hyphens
-              if grep -E "name: [A-Z_]" "$file"; then
-                echo "⚠ Warning: Found uppercase in resource name"
-                exit 1
-              fi
+
+          find k8s-three-tier \
+            -type f \( -name "*.yaml" -o -name "*.yml" \) \
+            -print0 |
+          while IFS= read -r -d '' file; do
+            if grep -E "^[[:space:]]*name: [A-Z_]" "$file"; then
+              echo "⚠ Error: Found uppercase or underscore in resource name: $file"
+              exit 1
             fi
           done
+
           echo "✓ Naming conventions OK"
 
       - name: Validate resource limits
         run: |
           echo "=== Checking Resource Limits ==="
-          for file in k8s-three-tier/*.yaml k8s-three-tier/*.yml; do
-            if [ -f "$file" ]; then
-              # Ensure all deployments have resource limits
-              if grep -q "kind: Deployment\|kind: StatefulSet" "$file"; then
-                if ! grep -q "resources:" "$file"; then
-                  echo "✗ Error: $file missing resource limits"
-                  exit 1
-                fi
+
+          find k8s-three-tier \
+            -type f \( -name "*.yaml" -o -name "*.yml" \) \
+            -print0 |
+          while IFS= read -r -d '' file; do
+            if grep -qE "^[[:space:]]*kind: (Deployment|StatefulSet)$" "$file"; then
+              if ! grep -q "resources:" "$file"; then
+                echo "✗ Error: $file missing resource limits"
+                exit 1
               fi
             fi
           done
+
           echo "✓ Resource limits configured"
 
-      - name: Security scan (kubesec)
+      - name: Security scan
         run: |
           echo "=== Running Security Scan ==="
-          curl -sSX POST --data-binary @k8s-three-tier/04-postgres-statefulset.yaml https://v2.kubesec.io/scan || true
+          curl -sSX POST \
+            --data-binary @k8s-three-tier/04-postgres-statefulset.yaml \
+            https://v2.kubesec.io/scan || true
           echo "✓ Security scan complete"
 
       - name: Generate deployment report
         if: success()
         run: |
-          echo "## ✓ Kubernetes Manifest Validation Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Date**: $(date)" >> $GITHUB_STEP_SUMMARY
-          echo "**Status**: All checks passed" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Manifests Validated" >> $GITHUB_STEP_SUMMARY
-          find k8s-three-tier -maxdepth 1 -name "*.yaml" -o -name "*.yml" | sort >> $GITHUB_STEP_SUMMARY
+          echo "## ✓ Kubernetes Manifest Validation Report" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Date**: $(date)" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Status**: All checks passed" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Manifests Validated" >> "$GITHUB_STEP_SUMMARY"
+          find k8s-three-tier \
+            -maxdepth 2 \
+            -type f \( -name "*.yaml" -o -name "*.yml" \) |
+            sort >> "$GITHUB_STEP_SUMMARY"
