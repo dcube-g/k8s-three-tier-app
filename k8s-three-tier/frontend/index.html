@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kubernetes Three-Tier Application</title>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background: #f4f6f8;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 30px;
+      background: white;
+      border-radius: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+
+    pre {
+      margin-top: 20px;
+      padding: 15px;
+      background: #eee;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <script>
+    function App() {
+      const [result, setResult] = React.useState(null);
+
+      async function checkBackend() {
+        try {
+          const response = await fetch("/api");
+          const data = await response.json();
+
+          React.useState;
+
+          setResult(data);
+        } catch (error) {
+          setResult({
+            error: error.message
+          });
+        }
+      }
+
+      return React.createElement(
+        "div",
+        { className: "container" },
+
+        React.createElement(
+          "h1",
+          null,
+          "Kubernetes Three-Tier Application"
+        ),
+
+        React.createElement(
+          "p",
+          null,
+          "Frontend: React + Nginx"
+        ),
+
+        React.createElement(
+          "p",
+          null,
+          "Backend: Node.js + Express"
+        ),
+
+        React.createElement(
+          "p",
+          null,
+          "Database: PostgreSQL"
+        ),
+
+        React.createElement(
+          "button",
+          { onClick: checkBackend },
+          "Check Backend"
+        ),
+
+        result &&
+          React.createElement(
+            "pre",
+            null,
+            JSON.stringify(result, null, 2)
+          )
+      );
+    }
+
+    ReactDOM
+      .createRoot(document.getElementById("root"))
+      .render(React.createElement(App));
+  </script>
+</body>
+</html>

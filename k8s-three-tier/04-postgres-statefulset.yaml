@@ -38,6 +38,13 @@ spec:
                 secretKeyRef:
                   name: three-tier-secrets
                   key: DATABASE_PASSWORD
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data

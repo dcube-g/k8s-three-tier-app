@@ -128,7 +128,7 @@ app.get("/api", async (req, res) => {
     const queryDuration = (Date.now() - queryStart) / 1000;
 
     dbQueryDuration.labels("api_query").observe(queryDuration);
-    dbConnections.set(pool.totalCount || 0);
+    dbConnections.set((pool.idleCount || 0) + (pool.waitingCount || 0));
 
     res.status(200).json({
       service: "three-tier-backend",

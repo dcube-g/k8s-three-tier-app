@@ -37,6 +37,10 @@ build/
 *.kubeconfig
 kubeconfig
 
+# Local secrets (development only)
+k8s-three-tier/secrets/
+k8s-three-tier/**/.env.local
+
 # Temporary files
 *.tmp
 *.temp
