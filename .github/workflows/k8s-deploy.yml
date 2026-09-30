@@ -20,13 +20,22 @@ jobs:
             fi
           done
 
-      - name: Dry-run validation
+      - name: Kubernetes schema validation
         run: |
-          echo "=== K8s Dry-Run Validation ==="
-          for file in k8s-three-tier/**/*.yml k8s-three-tier/**/*.yaml; do
-            if [ -f "$file" ]; then
-              echo "Validating: $file"
-              kubectl apply -f "$file" --dry-run=client -o yaml || exit 1
-            fi
+          echo "=== Kubernetes Schema Validation ==="
+
+          curl -L -sSf \
+            https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz \
+            -o /tmp/kubeconform.tar.gz
+
+          tar -xzf /tmp/kubeconform.tar.gz -C /tmp
+          sudo mv /tmp/kubeconform /usr/local/bin/kubeconform
+          kubeconform -version
+
+          find k8s-three-tier -type f \( -name "*.yaml" -o -name "*.yml" \) -print0 |
+          while IFS= read -r -d '' file; do
+            echo "Validating: $file"
+            kubeconform -strict -summary "$file" || exit 1
           done
+
           echo "=== Validation Complete ==="
