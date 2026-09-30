@@ -44,6 +44,7 @@ jobs:
             -type f \( -name "*.yaml" -o -name "*.yml" \) \
             ! -path "*/grafana/provisioning/*" \
             ! -path "*/monitoring/prometheus/prometheus.yml" \
+            ! -path "*/docker-compose.monitoring.yml" \
             -print0 |
           while IFS= read -r -d '' file; do
             echo "Validating: $file"
