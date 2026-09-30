@@ -8,9 +8,9 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - name: web
-    port: 9090
-    targetPort: 9090
-    protocol: TCP
+    - name: web
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
   selector:
     app.kubernetes.io/name: prometheus

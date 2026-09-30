@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -22,63 +23,63 @@ spec:
       hostPID: true
       hostIPC: true
       containers:
-      - name: node-exporter
-        image: prom/node-exporter:v1.6.1
-        imagePullPolicy: IfNotPresent
-        args:
-          - '--path.procfs=/host/proc'
-          - '--path.rootfs=/rootfs'
-          - '--path.sysfs=/host/sys'
-          - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
-          - '--collector.netdev.device-exclude=^(veth.*)'
-        ports:
-        - name: metrics
-          containerPort: 9100
-          protocol: TCP
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 9100
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 9100
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        resources:
-          requests:
-            cpu: 100m
-            memory: 200Mi
-          limits:
-            cpu: 200m
-            memory: 400Mi
-        volumeMounts:
-        - name: proc
-          mountPath: /host/proc
-          readOnly: true
-        - name: sys
-          mountPath: /host/sys
-          readOnly: true
-        - name: rootfs
-          mountPath: /rootfs
-          readOnly: true
+        - name: node-exporter
+          image: prom/node-exporter:v1.6.1
+          imagePullPolicy: IfNotPresent
+          args:
+            - '--path.procfs=/host/proc'
+            - '--path.rootfs=/rootfs'
+            - '--path.sysfs=/host/sys'
+            - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+            - '--collector.netdev.device-exclude=^(veth.*)'
+          ports:
+            - name: metrics
+              containerPort: 9100
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9100
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9100
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 200Mi
+            limits:
+              cpu: 200m
+              memory: 400Mi
+          volumeMounts:
+            - name: proc
+              mountPath: /host/proc
+              readOnly: true
+            - name: sys
+              mountPath: /host/sys
+              readOnly: true
+            - name: rootfs
+              mountPath: /rootfs
+              readOnly: true
       volumes:
-      - name: proc
-        hostPath:
-          path: /proc
-      - name: sys
-        hostPath:
-          path: /sys
-      - name: rootfs
-        hostPath:
-          path: /
+        - name: proc
+          hostPath:
+            path: /proc
+        - name: sys
+          hostPath:
+            path: /sys
+        - name: rootfs
+          hostPath:
+            path: /
       tolerations:
-      - effect: NoSchedule
-        operator: Exists
-      - effect: NoExecute
-        operator: Exists
+        - effect: NoSchedule
+          operator: Exists
+        - effect: NoExecute
+          operator: Exists
 ---
 apiVersion: v1
 kind: Service
@@ -91,9 +92,9 @@ spec:
   type: ClusterIP
   clusterIP: None
   ports:
-  - name: metrics
-    port: 9100
-    targetPort: 9100
-    protocol: TCP
+    - name: metrics
+      port: 9100
+      targetPort: 9100
+      protocol: TCP
   selector:
     app.kubernetes.io/name: node-exporter

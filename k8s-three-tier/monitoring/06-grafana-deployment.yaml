@@ -73,67 +73,67 @@ spec:
         runAsNonRoot: true
         runAsUser: 472
       containers:
-      - name: grafana
-        image: grafana/grafana:10.0.0
-        imagePullPolicy: IfNotPresent
-        ports:
-        - name: web
-          containerPort: 3000
-          protocol: TCP
-        env:
-        - name: GF_SECURITY_ADMIN_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: grafana-secrets
-              key: admin-password
-        - name: GF_SECURITY_ADMIN_USER
-          value: "admin"
-        - name: GF_INSTALL_PLUGINS
-          value: ""
-        - name: GF_SECURITY_ALLOW_EMBEDDING
-          value: "true"
-        - name: GF_SECURITY_COOKIE_SECURE
-          value: "false"
-        livenessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /api/health/db
-            port: 3000
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          timeoutSeconds: 5
-          failureThreshold: 3
-        resources:
-          requests:
-            cpu: 100m
-            memory: 128Mi
-          limits:
-            cpu: 200m
-            memory: 256Mi
-        volumeMounts:
-        - name: storage
-          mountPath: /var/lib/grafana
-        - name: datasources
-          mountPath: /etc/grafana/provisioning/datasources
-        - name: dashboards-provider
-          mountPath: /etc/grafana/provisioning/dashboards
+        - name: grafana
+          image: grafana/grafana:10.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: web
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secrets
+                  key: admin-password
+            - name: GF_SECURITY_ADMIN_USER
+              value: "admin"
+            - name: GF_INSTALL_PLUGINS
+              value: ""
+            - name: GF_SECURITY_ALLOW_EMBEDDING
+              value: "true"
+            - name: GF_SECURITY_COOKIE_SECURE
+              value: "false"
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health/db
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - name: storage
+              mountPath: /var/lib/grafana
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: dashboards-provider
+              mountPath: /etc/grafana/provisioning/dashboards
       volumes:
-      - name: storage
-        persistentVolumeClaim:
-          claimName: grafana-storage
-      - name: datasources
-        configMap:
-          name: grafana-datasources
-      - name: dashboards-provider
-        configMap:
-          name: grafana-dashboards-provider
+        - name: storage
+          persistentVolumeClaim:
+            claimName: grafana-storage
+        - name: datasources
+          configMap:
+            name: grafana-datasources
+        - name: dashboards-provider
+          configMap:
+            name: grafana-dashboards-provider
 ---
 apiVersion: v1
 kind: Service
@@ -145,9 +145,9 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-  - name: web
-    port: 3000
-    targetPort: 3000
-    protocol: TCP
+    - name: web
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
   selector:
     app.kubernetes.io/name: grafana
