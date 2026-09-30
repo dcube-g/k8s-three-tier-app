@@ -7,12 +7,16 @@ on:
     paths:
       - 'k8s-three-tier/**/*.yaml'
       - 'k8s-three-tier/**/*.yml'
+      - '.github/workflows/k8s-validate.yml'
+      - '.github/workflows/k8s-deploy.yml'
   pull_request:
     branches:
       - main
     paths:
       - 'k8s-three-tier/**/*.yaml'
       - 'k8s-three-tier/**/*.yml'
+      - '.github/workflows/k8s-validate.yml'
+      - '.github/workflows/k8s-deploy.yml'
 
 jobs:
   validate:
